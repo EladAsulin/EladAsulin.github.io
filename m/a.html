@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" dir="ltr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#000000">
+<title>Elad Asulin · mobile test A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap">
+<style>
+:root{--ease:cubic-bezier(.16,1,.3,1);--dim:#5c5c5c;--g:max(20px,env(safe-area-inset-left))}
+*{box-sizing:border-box}
+html{background:#000;-webkit-text-size-adjust:100%}
+body{margin:0;background:#000;color:#fff;font-family:Jost,Futura,"Helvetica Neue",Arial,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+/* background cinema */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#000}
+.layer{position:absolute;inset:0;opacity:0;transition:opacity .8s ease}
+.layer.on{opacity:.4}
+.layer img,.layer video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.layer video{opacity:0;transition:opacity .8s ease}
+.layer video.ready{opacity:1}
+#bg::after{content:"";position:absolute;inset:0;background:linear-gradient(#000 0,transparent 22%,transparent 78%,#000 100%);opacity:.7}
+/* text */
+main{position:relative;z-index:1;padding:0 var(--g) 0 var(--g)}
+header{padding:calc(env(safe-area-inset-top) + 28px) 0 0}
+.name{margin:0;font-size:22px;font-weight:500;letter-spacing:.01em}
+.tag{margin:4px 0 0;font-size:15px;color:#9a9a9a}
+#list{padding:34vh 0 0}
+.topic{margin:64px 0 18px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#7a7a7a}
+.topic:first-child{margin-top:0}
+.film{display:block;width:100%;text-align:left;padding:10px 0 12px}
+.film h2{margin:0;font-size:clamp(30px,9vw,44px);line-height:1.06;font-weight:400;letter-spacing:-.01em;color:var(--dim);transition:color .6s ease}
+.film .meta{margin-top:8px;opacity:0;transition:opacity .6s ease;font-size:14px;line-height:1.45;color:#cfcfcf}
+.film .cl{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin-bottom:3px}
+.film .ln{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.film.act h2{color:#fff}
+.film.act .meta{opacity:1}
+footer{padding:38vh 0 calc(env(safe-area-inset-bottom) + 48px);display:flex;gap:28px;font-size:18px}
+footer a{text-decoration:none;border-bottom:1px solid #555;padding-bottom:3px}
+/* rise */
+.r{opacity:0;transform:translateY(18px);transition:opacity 1.6s var(--ease),transform 1.6s var(--ease)}
+.r.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.r{transform:none;transition:opacity .6s}.layer,.layer video{transition:none}}
+/* full-screen player */
+#pl{position:fixed;inset:0;z-index:10;background:#000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .4s ease,visibility 0s linear .4s}
+#pl.open{opacity:1;visibility:visible;transition:opacity .4s ease}
+#pl video{width:100%;height:100%;object-fit:contain;background:#000}
+#close{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:max(12px,env(safe-area-inset-right));z-index:2;font-size:15px;letter-spacing:.06em;padding:10px 16px;border:1px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#pt{position:absolute;left:var(--g);top:calc(env(safe-area-inset-top) + 20px);right:110px;font-size:15px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2;pointer-events:none}
+</style></head><body>
+<div id="bg" aria-hidden="true"></div>
+<main>
+  <header><p class="name r">Elad Asulin</p><p class="tag r">creating stories</p></header>
+  <div id="list"></div>
+  <footer class="r"><a href="/#about">About</a><a href="/#contact">Contact</a></footer>
+</main>
+<div id="pl" role="dialog" aria-modal="true" aria-label="Film"><p id="pt"></p><button id="close" type="button">Close</button><video id="pv" controls playsinline preload="none"></video></div>
+<script>
+const MEDIA='https://eladasulin.github.io/media/',ORDER=['Animation & AI','Commercials & Brand Films','Campaigns','Documentary','Fiction & Music Videos'];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const src=f=>MEDIA+(f.episodes?f.episodes[0].v:f.id)+'.mp4',poster=f=>'../p/'+f.id+'.jpg';
+const list=document.getElementById('list'),bg=document.getElementById('bg'),pl=document.getElementById('pl'),pv=document.getElementById('pv');
+let F=[],items=[],act=-1,layer=null,swapT=0;
+// Elad's line is "Client — film type + purpose": split it so the client sits above the sentence
+const split=f=>{const l=f.line||'',m=l.match(/^([^—]{1,80}?)\s+—\s+(.*)$/);return m?[m[1],m[2]]:[f.client||'',l]};
+fetch('../films.json').then(r=>r.json()).then(a=>{
+  F=a;const groups=[];
+  const reel=a.filter(f=>f.no_beam);if(reel.length)groups.push(['Showreel',reel]);
+  [...new Set(a.filter(f=>!f.no_beam).map(f=>f.category))].sort((x,y)=>ORDER.indexOf(x)-ORDER.indexOf(y)).forEach(c=>groups.push([c,a.filter(f=>!f.no_beam&&f.category===c)]));
+  let h='',n=0;
+  for(const [c,fs] of groups){if(c!=='Showreel')h+=`<p class="topic r">${esc(c)}</p>`;for(const f of fs){h+=`<button class="film r" type="button" data-i="${a.indexOf(f)}"><h2>${esc(f.title)}</h2><div class="meta">${(([c,l])=>(c?`<span class="cl">${esc(c)}</span>`:'')+`<span class="ln">${esc(l)}</span>`)(split(f))}</div></button>`;n++}}
+  list.innerHTML=h;items=[...list.querySelectorAll('.film')];
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.r').forEach(el=>io.observe(el));
+  items.forEach(b=>b.addEventListener('click',()=>open(F[+b.dataset.i])));
+  pick();addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(()=>{ticking=false;pick()})}},{passive:true});
+  addEventListener('resize',pick);
+});
+let ticking=false;
+function pick(){
+  const mid=innerHeight/2;let best=-1,bd=1e9;
+  items.forEach((b,i)=>{const r=b.firstChild.getBoundingClientRect(),d=Math.abs(r.top+r.height/2-mid);if(d<bd){bd=d;best=i}});
+  if(best<0||best===act)return;
+  // a little hysteresis so the centre does not flicker between two titles
+  if(act>=0){const r=items[act].firstChild.getBoundingClientRect();if(Math.abs(r.top+r.height/2-mid)-bd<14)return}
+  if(act>=0)items[act].classList.remove('act');act=best;items[act].classList.add('act');
+  clearTimeout(swapT);swapT=setTimeout(()=>show(F[+items[act].dataset.i]),180);   // fast flicks do not start a video per title
+}
+function show(f){
+  if(layer&&layer.dataset.id===f.id)return;
+  const L=document.createElement('div');L.className='layer';L.dataset.id=f.id;
+  const im=new Image();im.src=poster(f);im.alt='';L.appendChild(im);
+  const v=document.createElement('video');v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='metadata';v.poster=poster(f);
+  v.addEventListener('playing',()=>v.classList.add('ready'),{once:true});
+  v.src=src(f);L.appendChild(v);bg.appendChild(L);
+  const old=layer;layer=L;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>L.classList.add('on')));
+  v.play().catch(()=>{});
+  if(old){old.classList.remove('on');const ov=old.querySelector('video');setTimeout(()=>{ov.pause();ov.removeAttribute('src');ov.load();old.remove()},850)}
+  // never more than two layers, even if the user flicks fast
+  [...bg.querySelectorAll('.layer')].slice(0,-2).forEach(x=>{const xv=x.querySelector('video');xv.pause();xv.removeAttribute('src');xv.load();x.remove()});
+}
+function open(f){
+  const bv=layer&&layer.querySelector('video');if(bv)bv.pause();
+  document.getElementById('pt').textContent=f.title;
+  pv.poster=poster(f);pv.src=src(f);pv.muted=false;pl.classList.add('open');document.body.style.overflow='hidden';
+  pv.play().catch(()=>{});
+}
+function close(){
+  pv.pause();pv.removeAttribute('src');pv.load();pl.classList.remove('open');document.body.style.overflow='';
+  const bv=layer&&layer.querySelector('video');if(bv)bv.play().catch(()=>{});
+}
+document.getElementById('close').addEventListener('click',close);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&pl.classList.contains('open'))close()});
+document.addEventListener('visibilitychange',()=>{const bv=layer&&layer.querySelector('video');if(!bv||pl.classList.contains('open'))return;document.hidden?bv.pause():bv.play().catch(()=>{})});
+</script>
+</body></html>
