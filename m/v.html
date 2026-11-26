@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><title>Elad Asulin · moving bands test</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap">
+<style>
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Jost,system-ui,sans-serif;overflow:hidden}
+#st{position:fixed;inset:0}
+/* six diagonal bands (the same geometry and framing as c.html); the opening six show a ~1s clip of their film instead of a still */
+.band{position:absolute;inset:0;opacity:0;transition:opacity 1.4s cubic-bezier(.16,1,.3,1)}.band.on{opacity:1}
+.ly{position:absolute;inset:0;overflow:hidden}.ly img,.ly video{position:absolute;display:block;max-width:none;user-select:none;-webkit-user-drag:none;object-fit:fill;background:transparent}
+.ly.in{transition:clip-path 1.1s cubic-bezier(.7,0,.2,1)}
+#dim{position:fixed;inset:0;pointer-events:none;background:linear-gradient(165deg,rgba(0,0,0,calc(var(--d) + .25)) 0%,rgba(0,0,0,var(--d)) 38%,rgba(0,0,0,var(--d)) 70%,rgba(0,0,0,calc(var(--d) + .2)) 100%)}
+:root{--d:.4}
+.tx{position:fixed;left:max(7vw,24px);top:max(9vh,28px);text-shadow:0 1px 3px rgba(0,0,0,.55),0 2px 28px rgba(0,0,0,.6);pointer-events:none}
+h1{font-weight:400;font-size:clamp(46px,8.4vw,116px);line-height:1;margin:0;letter-spacing:-.015em}
+.tx p{font-size:clamp(20px,2.3vw,30px);margin:.45em 0 0;font-weight:300}
+.sw{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center;font-size:13px;flex-wrap:wrap;justify-content:flex-end}
+button,.sw label{font:inherit;font-size:13px;color:#fff;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.4);padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;gap:8px;align-items:center}
+button[aria-pressed=true]{background:#fff;color:#000}
+input[type=range]{width:90px;accent-color:#fff}
+#meter{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));font:12px/1.5 ui-monospace,Menlo,monospace;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:4px;white-space:pre}
+@media(prefers-reduced-motion:reduce){.ly.in{transition:opacity .4s}.band{transition:none}}
+</style></head><body>
+<div id="st"></div><div id="dim"></div>
+<div class="tx"><h1>Elad Asulin</h1><p>creating stories</p></div>
+<div class="sw"><button id="mA" aria-pressed="true">A · ping-pong</button><button id="mB" aria-pressed="false">B · once, then hold</button><label>Dim <input id="dm" type="range" min="0" max=".8" step=".02" value=".4"></label><button id="wb">Wipe</button></div>
+<div id="meter"></div>
+<script>
+/* the opening six (first.land) and their clips in v/: NAME-pp.mp4 = forward + backward in one file (loops with no jump),
+   NAME-once.mp4 = ends exactly on the chosen frame (plays once, then holds); off = seconds into -pp where the chosen frame sits */
+const CLIP={40:{v:'qumra',fps:25,off:12},14:{v:'eye',fps:24,off:12},43:{v:'habayit',fps:24,off:12},41:{v:'we4g',fps:25,off:12},4:{v:'bird-song',fps:25,off:12},27:{v:'penguins',fps:24,off:0}};
+let D,MODE=new URLSearchParams(location.search).get('mode')==='B'?'B':'A';   /* v.html?mode=B opens in B */
+const LAND={top:[0,22,40,58,76,94,100],bot:[0,6,24,42,60,78,100]};
+const st=document.getElementById('st'),calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function poly(W,H,i){const T=LAND.top,B=LAND.bot;return [[T[i]*W/100,0],[T[i+1]*W/100,0],[B[i+1]*W/100,H],[B[i]*W/100,H]]}
+function cpath(i){const T=LAND.top,B=LAND.bot;return `polygon(${T[i]}% 0,${T[i+1]}% 0,${B[i+1]}% 100%,${B[i]}% 100%)`}
+function centre(W,H,i,v){const T=LAND.top,B=LAND.bot,a=(T[i]+T[i+1])/200*W,b=(B[i]+B[i+1])/200*W;return a+(b-a)*v/H}
+/* the same placement as the stills: cover the band's box, zoom z, focal point on the band's centre line; a <video> is placed exactly like an <img> */
+function place(el,i){const fr=el.fr,W=innerWidth,H=innerHeight,P=poly(W,H,i),xs=P.map(q=>q[0]),x0=Math.min(...xs),x1=Math.max(...xs),y0=0,y1=H,bw=x1-x0,bh=y1-y0;
+  const s=fr.z*Math.max(bw/fr.w,bh/fr.h),dw=fr.w*s,dh=fr.h*s,ty=y0+fr.fy*bh,tx=centre(W,H,i,ty);
+  const l=Math.min(x0,Math.max(x1-dw,tx-fr.fx*dw)),t=Math.min(y0,Math.max(y1-dh,ty-fr.fy*dh));Object.assign(el.style,{left:l+'px',top:t+'px',width:dw+'px',height:dh+'px'})}
+const bands=[...Array(6)].map((_,i)=>{const b=document.createElement('div');b.className='band';b.style.clipPath=cpath(i);st.append(b);return b});
+const cur=Array(6).fill(-1),recent=[];
+const still=n=>{const fr=D.land[n],im=new Image();im.decoding='async';im.alt='';im.fr=fr;im.n=n;im.src='b/'+fr.s;im.ready=(im.decode?im.decode():new Promise(r=>im.onload=r)).catch(()=>{});return im};
+/* a clip: muted, inline, the still as poster until the first frame is there */
+function clip(n){const c=CLIP[n],fr=D.land[n],v=document.createElement('video');v.muted=v.defaultMuted=true;v.playsInline=true;v.setAttribute('muted','');v.setAttribute('playsinline','');v.preload='auto';v.poster='b/'+fr.s;v.fr=fr;v.n=n;v.c=c;
+  v.loop=MODE==='A';v.src='v/'+c.v+(MODE==='A'?'-pp':'-once')+'.mp4';
+  v.ready=new Promise(r=>{if(v.readyState>=3)r();v.addEventListener('canplaythrough',r,{once:true});v.addEventListener('error',r,{once:true});setTimeout(r,4000)});
+  if(MODE==='A')v.addEventListener('loadedmetadata',()=>{v.currentTime=c.off/c.fps+.001},{once:true});return v}
+const vids=()=>[...st.querySelectorAll('video')];
+function layer(i,el){const l=document.createElement('div');l.className='ly';l.append(el);place(el,i);bands[i].append(l);return l}
+function go(v){if(!v.isConnected)return;if(MODE==='B'){v.currentTime=0}v.play().catch(()=>{})}
+function pickSet(){const busy=new Set(cur.filter(n=>n>=0).map(n=>D.land[n].f)),out=[],L=D.land;
+  for(let i=0;i<6;i++){const used=new Set([...busy,...out.map(n=>L[n].f)]);let c=L.map((f,n)=>n).filter(n=>L[n].b.includes(i)&&!used.has(L[n].f)&&!recent.includes(n));
+    if(!c.length)c=L.map((f,n)=>n).filter(n=>L[n].b.includes(i)&&!used.has(L[n].f));if(!c.length)c=L.map((f,n)=>n).filter(n=>L[n].b.includes(i)&&n!==cur[i]);out.push(c[Math.random()*c.length|0])}
+  return out}
+/* deal six elements into the bands; each clip starts as its band comes in (A loops from the chosen frame, B plays once and holds) */
+function show(set,anim){set.forEach((el,i)=>{cur[i]=el.n;recent.push(el.n);if(recent.length>24)recent.shift()});
+  if(!anim&&MODE==='A'){Promise.all(set.map(el=>el.ready)).then(()=>set.forEach(el=>{if(el.play)go(el)}))}
+  set.forEach((el,i)=>{const b=bands[i];if(!anim){b.replaceChildren();layer(i,el);setTimeout(()=>{b.classList.add('on');if(el.play&&MODE==='B')el.ready.then(()=>go(el))},150+i*160);return}
+    const run=()=>{const l=layer(i,el),from=i%2?'inset(100% 0 0 0)':'inset(0 0 100% 0)';
+      if(calm){l.style.opacity=0;l.classList.add('in');l.getBoundingClientRect();l.style.opacity=1}else{l.style.clipPath=from;l.getBoundingClientRect();l.classList.add('in');l.style.clipPath='inset(0)'}
+      if(el.play)go(el);
+      setTimeout(()=>{while(b.children.length>1){b.firstChild.querySelector('video')?.removeAttribute('src');b.firstChild.remove()}},1250)};
+    Promise.race([el.ready,new Promise(r=>setTimeout(r,2500))]).then(()=>setTimeout(run,i*140))})}
+const opening=()=>D.first.land.map(clip);
+let onClips=true,busy=0;
+/* Wipe: the clips give way to six random stills, the next Wipe brings the six clips back (so B can be seen playing in again) */
+function wipe(){if(busy)return;busy=1;const set=onClips?pickSet().map(still):opening();onClips=!onClips;show(set,true);setTimeout(()=>busy=0,6*140+1150)}
+function setMode(m){if(m===MODE)return;MODE=m;mA.setAttribute('aria-pressed',m==='A');mB.setAttribute('aria-pressed',m==='B');
+  if(onClips)bands.forEach((b,i)=>{const old=b.querySelector('video');if(!old)return;const v=clip(old.n);old.removeAttribute('src');old.load();old.replaceWith(v);place(v,i);v.ready.then(()=>go(v))})}
+addEventListener('resize',()=>bands.forEach((b,i)=>b.querySelectorAll('img,video').forEach(el=>place(el,i))));
+/* hidden tab: everything stops; back: A resumes, B stays on its held frame */
+document.addEventListener('visibilitychange',()=>{if(document.hidden)vids().forEach(v=>v.pause());else if(MODE==='A')vids().forEach(v=>v.play().catch(()=>{}))});
+const mA=document.getElementById('mA'),mB=document.getElementById('mB');mA.setAttribute('aria-pressed',MODE==='A');mB.setAttribute('aria-pressed',MODE==='B');mA.onclick=()=>setMode('A');mB.onclick=()=>setMode('B');
+document.getElementById('wb').onclick=wipe;
+const dm=document.getElementById('dm');dm.oninput=()=>document.documentElement.style.setProperty('--d',dm.value);
+/* meter: page frame rate and the videos' dropped frames */
+const meter=document.getElementById('meter');let fN=0,fT=performance.now();(function tick(t){fN++;if(t-fT>=1000){const q=vids().map(v=>v.getVideoPlaybackQuality?.()).filter(Boolean),tot=q.reduce((a,x)=>a+x.totalVideoFrames,0),drop=q.reduce((a,x)=>a+x.droppedVideoFrames,0);
+  meter.textContent=`${Math.round(fN*1000/(t-fT))} fps · ${vids().filter(v=>!v.paused).length} playing · video frames ${tot}, dropped ${drop} · ${innerWidth}×${innerHeight}`;fN=0;fT=t}requestAnimationFrame(tick)})(fT);
+fetch('b/bands.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{D=d;show(opening(),false)});
+</script>
+</body></html>
