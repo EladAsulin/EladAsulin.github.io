@@ -31,7 +31,7 @@ main:focus{outline:none}:focus-visible{outline:1px solid var(--white);outline-of
 #hint.drawn .ln{animation:hl .35s cubic-bezier(.25,.6,.3,1) both}#hint.drawn .h1{animation:h1 .3s cubic-bezier(.3,.7,.3,1) .32s both}#hint.drawn .h2{animation:h2 .3s cubic-bezier(.3,.7,.3,1) .36s both}
 @keyframes hl{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}@keyframes h1{from{transform:rotate(0);opacity:0}20%{opacity:1}to{transform:rotate(42deg);opacity:1}}@keyframes h2{from{transform:rotate(0);opacity:0}20%{opacity:1}to{transform:rotate(-42deg);opacity:1}}
 #hint.trk{transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.25,.6,.3,1)}
-#dust{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;mix-blend-mode:difference}
+#dust{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%}
 #tag{position:fixed;left:0;top:0;z-index:1;pointer-events:none;font-size:13px;line-height:1;white-space:nowrap;transform:translate(calc(var(--x) - 50%),calc(var(--y) + var(--bh) + 6px))}
 
 
@@ -102,7 +102,7 @@ button.cat{font:400 var(--mid)/1.3 var(--disp);padding:calc(var(--u)*.75) 0;text
 @container (max-width:560px){.row{--tw:116px;--vh:128px;gap:0 14px;align-items:start;padding:10px 0}#work .row .link{padding-top:0}}
 </style>
 </head><body>
-<div id="app" dir="ltr" lang="en"><div id="beam" aria-hidden="true"><canvas width="900" height="900"></canvas></div><canvas id="dust" aria-hidden="true"></canvas><div id="tag" aria-hidden="true"></div><div id="hint" aria-hidden="true"><svg viewBox="0 0 33 18" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><path class="ln" d="M1.5 9H31.5" pathLength="1" stroke-dasharray="1"/><path class="hd h1" d="M31.5 9H23"/><path class="hd h2" d="M31.5 9H23"/></svg></div><main id="views" tabindex="-1"></main><aside id="panel" aria-label="Panel" inert><nav id="pbar"><a id="up" href="#work" hidden>All work</a><a id="x" href="#home" aria-label="Close panel">Close</a></nav><div id="pane" tabindex="-1"></div></aside></div>
+<div id="app" dir="ltr" lang="en"><div id="beam" aria-hidden="true"><canvas width="900" height="900"></canvas></div><canvas id="dust" aria-hidden="true"></canvas><div id="tag" aria-hidden="true"></div><div id="hint" aria-hidden="true"><svg viewBox="0 0 33 18" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path class="ln" d="M1.5 9H31.5" pathLength="1" stroke-dasharray="1"/><path class="hd h1" d="M31.5 9H23"/><path class="hd h2" d="M31.5 9H23"/></svg></div><main id="views" tabindex="-1"></main><aside id="panel" aria-label="Panel" inert><nav id="pbar"><a id="up" href="#work" hidden>All work</a><a id="x" href="#home" aria-label="Close panel">Close</a></nav><div id="pane" tabindex="-1"></div></aside></div>
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const MAIL='gfasolin@gmail.com',TEL='+972 50-601-9922',root=document.documentElement,views=$('#views'),panel=$('#panel'),pane=$('#pane'),beam=$('#beam'),tag=$('#tag'),cv=$('canvas'),cx=cv.getContext('2d');
@@ -195,10 +195,10 @@ const dust=$('#dust'),dc=dust.getContext('2d'),P=[];let dRaf=0,dpr=1,dlx=null,dl
 function dsize(){dpr=Math.min(devicePixelRatio||1,coarse?1:2);dust.width=Math.round(innerWidth*dpr);dust.height=Math.round(innerHeight*dpr)}dsize();addEventListener('resize',dsize);
 function sprinkle(){if(calm||coarse||root.classList.contains('still')){dlx=null;return}if(dlx==null){dlx=x;dly=y;return}const mx=x-dlx,my=y-dly,m=Math.hypot(mx,my);dlx=x;dly=y;if(m<.3||m>300)return;dacc+=m;
   const back=Math.atan2(-my,-mx);while(dacc>=(coarse?7:4)){dacc-=coarse?7:4;if(P.length>=(coarse?110:320))continue;const a=back+(Math.random()-.5)*2.2,k=.5+Math.random()*.45,s=8+Math.random()*18,va=Math.random()*6.283,L=1+Math.random()*.6,big=Math.random()<.15;
-    P.push({x:x+Math.cos(a)*bw*k,y:y+Math.sin(a)*bh*k,vx:Math.cos(va)*s-mx*.4,vy:Math.sin(va)*s-my*.4,s:big?2.4+Math.random()*.8:1.5+Math.random()*1.1,a:big?.8+Math.random()*.05:.5+Math.random()*.3,f:Math.random()*6.283,l:L,L})}
+    P.push({x:x+Math.cos(a)*bw*k,y:y+Math.sin(a)*bh*k,vx:Math.cos(va)*s-mx*.4,vy:Math.sin(va)*s-my*.4,s:big?2.4+Math.random()*.8:1.5+Math.random()*1.1,a:big?.82+Math.random()*.03:.6+Math.random()*.22,f:Math.random()*6.283,l:L,L})}
   if(P.length&&!dRaf)dRaf=requestAnimationFrame(dstep)}
 function dstep(t){const dt=Math.min(.05,(t-(dstep.t??t))/1000);dstep.t=t;dc.setTransform(dpr,0,0,dpr,0,0);dc.clearRect(0,0,innerWidth,innerHeight);dc.fillStyle='#fff';
-  for(let i=P.length;i--;){const p=P[i];p.l-=dt;if(p.l<=0){P.splice(i,1);continue}p.x+=p.vx*dt;p.y+=p.vy*dt;dc.globalAlpha=Math.min(1,p.a*p.l/p.L*(.8+.2*Math.sin(p.f+p.l*18)));dc.fillRect(p.x-p.s/2,p.y-p.s/2,p.s,p.s)}
+  for(let i=P.length;i--;){const p=P[i];p.l-=dt;if(p.l<=0){P.splice(i,1);continue}p.x+=p.vx*dt;p.y+=p.vy*dt;const al=Math.min(1,p.a*p.l/p.L*(.8+.2*Math.sin(p.f+p.l*18))),h=p.s/2;dc.globalAlpha=al*.45;dc.fillStyle='#000';dc.fillRect(p.x-h-.7,p.y-h-.7,p.s+1.4,p.s+1.4);dc.globalAlpha=al;dc.fillStyle='#fff';dc.fillRect(p.x-h,p.y-h,p.s,p.s)}
   dc.globalAlpha=1;if(P.length)dRaf=requestAnimationFrame(dstep);else{dRaf=0;dstep.t=null}}
 let glide=0;function tick(){const n=performance.now(),dt=Math.min(50,n-(tick.t||n));tick.t=n;const k=calm?1:n<glide?1-Math.exp(-dt/75):.34;x+=(tx-x)*k;y+=(ty-y)*k;paint();sprinkle();raf=Math.abs(tx-x)+Math.abs(ty-y)>.3?requestAnimationFrame(tick):0}
 function go(){if(!raf)raf=requestAnimationFrame(tick)}
@@ -285,7 +285,7 @@ function route(first,keep){const h=location.hash.slice(1)||'home',m=h.match(/^fi
  if(p!==was){if(p==='work'&&was==='film')pane.scrollTop=wsy;else if(open)centreContent()}placeContact();if(first)rest();else{fitPage();paint()}setScope(cur?[cur]:null);if(!cut()&&shown.i<0)poster();
  if(!first)(open?pane:views).focus({preventScroll:true});arm();
  if(first&&coarse)setTimeout(()=>$$('#home .w').forEach(w=>light(w)),calm?1200:900);
- if(first&&!open&&!calm)setTimeout(()=>{const t=$('.role');if(page==='home'&&!arm.used&&t){const b=t.getBoundingClientRect();point({right:b.right-28,top:b.bottom+6,height:0},$('.col'));const w=$('#home a.link');if(w&&hint.in){const r=w.getBoundingClientRect(),y=Math.max(b.bottom+14,r.top-24-66);hint.style.transform=`translate(${(r.left+r.width*.3).toFixed(1)}px,${y.toFixed(1)}px) rotate(1.571rad)`;hint.classList.add('slow')}}},700)}
+ if(first&&!open&&!calm)setTimeout(()=>{const t=$('.role');if(page==='home'&&t&&$$('#home a.link .w:not(.lit)').length){const b=t.getBoundingClientRect();point({right:b.right-28,top:b.bottom+6,height:0},$('.col'));const w=$('#home a.link');if(w&&hint.in){const r=w.getBoundingClientRect(),y=Math.max(b.bottom+14,r.top-24-66);hint.style.transform=`translate(${(r.left+r.width*.3).toFixed(1)}px,${y.toFixed(1)}px) rotate(1.571rad)`;hint.classList.add('slow')}}},800)}
 function fitPage(){$('.col')?.classList.toggle('fit',root.scrollHeight<=innerHeight+2)}
 function rest(){const t=$('.name'),b=t.getBoundingClientRect();r=R();setShape(bs);tx=x=b.left+b.width/2;ty=y=b.top+b.height/2;dlx=null;$$('.w',t).forEach(light);$$('.role .w').forEach(light);
  fitPage();paint()}
