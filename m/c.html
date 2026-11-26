@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><title>Elad Asulin · slate test</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap">
+<style>
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Jost,system-ui,sans-serif;overflow:hidden}
+.st{position:fixed;inset:0}
+.sl{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.06);transition:opacity 1.6s cubic-bezier(.16,1,.3,1),transform 2.4s cubic-bezier(.16,1,.3,1)}
+.sl.on{opacity:1;transform:none}
+/* six diagonal bands; each band is one frame, together they fill the screen */
+.sl:nth-child(1){clip-path:polygon(0 0,22% 0,6% 100%,0 100%)}
+.sl:nth-child(2){clip-path:polygon(22% 0,40% 0,24% 100%,6% 100%)}
+.sl:nth-child(3){clip-path:polygon(40% 0,58% 0,42% 100%,24% 100%)}
+.sl:nth-child(4){clip-path:polygon(58% 0,76% 0,60% 100%,42% 100%)}
+.sl:nth-child(5){clip-path:polygon(76% 0,94% 0,78% 100%,60% 100%)}
+.sl:nth-child(6){clip-path:polygon(94% 0,100% 0,100% 100%,78% 100%)}
+@media(orientation:portrait){
+.sl:nth-child(1){clip-path:polygon(0 0,100% 0,100% 8%,0 22%)}
+.sl:nth-child(2){clip-path:polygon(0 22%,100% 8%,100% 25%,0 39%)}
+.sl:nth-child(3){clip-path:polygon(0 39%,100% 25%,100% 42%,0 56%)}
+.sl:nth-child(4){clip-path:polygon(0 56%,100% 42%,100% 59%,0 73%)}
+.sl:nth-child(5){clip-path:polygon(0 73%,100% 59%,100% 76%,0 90%)}
+.sl:nth-child(6){clip-path:polygon(0 90%,100% 76%,100% 100%,0 100%)}}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.38)}
+.tx{position:absolute;left:7vw;top:9vh;text-shadow:0 2px 24px rgba(0,0,0,.6)}
+h1{font-weight:400;font-size:clamp(46px,9vw,120px);line-height:1;margin:0;letter-spacing:-.01em}
+p{font-size:clamp(18px,2.2vw,28px);margin:.5em 0 0;font-weight:300}
+.sw{position:absolute;right:16px;bottom:16px;display:flex;gap:8px}
+button{font:inherit;font-size:13px;color:#fff;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.4);padding:8px 12px;border-radius:4px}
+</style></head><body>
+<div class="st" id="st"></div><div class="dim" id="dim"></div>
+<div class="tx"><h1>Elad Asulin</h1><p>creating stories</p></div>
+<div class="sw"><button id="b1">Shuffle</button><button id="b2">Dim on/off</button><button id="b3">Gaps on/off</button></div>
+<script>
+const F=['qumra','eye','habayit','we4g','airovation','bird-song'],st=document.getElementById('st');
+function draw(a){st.innerHTML='';a.forEach((f,i)=>{const d=document.createElement('div');d.className='sl';d.style.backgroundImage=`url(s/${f}.jpg)`;st.append(d);setTimeout(()=>d.classList.add('on'),150+i*160)})}
+draw(F);
+b1.onclick=()=>draw(F.slice().sort(()=>Math.random()-.5));
+b2.onclick=()=>{dim.style.display=dim.style.display==='none'?'':'none'};
+let g=0;b3.onclick=()=>{g=!g;st.style.filter='';[...st.children].forEach(d=>d.style.outline=g?'':'' );st.style.gap='';document.body.style.setProperty('--g',g?1:0);st.classList.toggle('gap');};
+</script>
+<style>.gap .sl{inset:0;-webkit-mask:none}.gap .sl::after{content:"";position:absolute;inset:0}.gap{background:#000}.gap .sl{filter:none;scale:.985}</style>
+</body></html>
