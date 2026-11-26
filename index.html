@@ -188,7 +188,7 @@ function label(){tag.textContent=shown.film&&page==='home'?shown.film.title:''}
 let tx=0,ty=0,x=0,y=0,r=0,acc=0,lx=null,ly,raf=0,idle=0,drift=null,driftRaf=0;
 const R=()=>Math.min(innerWidth*.20,innerHeight*.125,115);
 function paint(){root.style.setProperty('--x',x.toFixed(1)+'px');root.style.setProperty('--y',y.toFixed(1)+'px');root.style.setProperty('--r',r.toFixed(1)+'px');
-  if(!root.classList.contains('still')&&!(coarse&&page!=='home'))for(const w of $$(coarse?'#home .w:not(.lit)':'.w:not(.lit)')){const b=w.getBoundingClientRect();if(!b.height)continue;const cx=b.left+b.width/2,cy=b.top+b.height/2,nx=Math.max(b.left,Math.min(x,b.right)),ny=Math.max(b.top,Math.min(y,b.bottom));
+  if(!driftRaf&&!root.classList.contains('still')&&!(coarse&&page!=='home'))for(const w of $$(coarse?'#home .w:not(.lit)':'.w:not(.lit)')){const b=w.getBoundingClientRect();if(!b.height)continue;const cx=b.left+b.width/2,cy=b.top+b.height/2,nx=Math.max(b.left,Math.min(x,b.right)),ny=Math.max(b.top,Math.min(y,b.bottom));
     const d=Math.hypot((nx-x)/bw,(ny-y)/bh);if(d<.9)light(w,d)}
   place()}
 function place(){if(!tag.textContent)return;const a=tag.getBoundingClientRect();tag.style.visibility=a.bottom>innerHeight||$$('.t').some(t=>{const b=t.getBoundingClientRect();return a.right>b.left-8&&a.left<b.right+8&&a.bottom>b.top&&a.top<b.bottom})?'hidden':''}
@@ -240,7 +240,7 @@ function startDrift(){const v=$('video:not(.pv)');if(v&&!v.paused){arm();return}
   const area=()=>{const host=page==='home'?$('.col'):pane.firstElementChild,ls=host?$$('.t',host).map(e=>e.getBoundingClientRect()).filter(b=>b.height&&b.bottom>0&&b.top<innerHeight):[];
     return {l:innerWidth*.08,r:innerWidth*.92,t:innerHeight*.1,b:innerHeight*.9};if(!ls.length)return {l:innerWidth*.2,r:innerWidth*.6,t:innerHeight*.3,b:innerHeight*.7};const l=Math.min(...ls.map(b=>b.left));return {l,r:Math.min(Math.max(...ls.map(b=>b.right)),l+innerWidth*.5),t:Math.min(...ls.map(b=>b.top)),b:Math.max(...ls.map(b=>b.bottom))}};
   let t0,ts,box=null,bt=0;const step=t=>{const dt=Math.min(50,t-(t0??t));t0=t;ts??=t;if(!box||t-bt>2000){box=area();bt=t}
-    const q=(t-ts)/1000*(calm?.5:1),e=Math.min(1,q/1.4)**2,f=e*(1-Math.exp(-dt/350)),px=box.l+(box.r-box.l)*(.5+.38*Math.sin(q*.55)+.12*Math.sin(q*1.3)),py=box.t+(box.b-box.t)*(.5-.5*Math.cos(q*.8));
+    const q=(t-ts)/1000*(calm?.5:1),e=Math.min(1,q/1.4)**2,f=e*(1-Math.exp(-dt/350)),px=box.l+(box.r-box.l)*(.5+.38*Math.sin(q*.2)+.12*Math.sin(q*.47)),py=box.t+(box.b-box.t)*(.5-.5*Math.cos(q*.29));
     tx+=(px-tx)*f;ty+=(py-ty)*f;travel(tx,ty);go();driftRaf=requestAnimationFrame(step)};driftRaf=requestAnimationFrame(step)}
 
 
@@ -306,6 +306,8 @@ addEventListener('touchstart',()=>cancelAnimationFrame(centreBox.r),{passive:tru
 addEventListener('scroll',e=>{if(hint.in&&e.target===pane&&performance.now()-hint.t>400)(hint.in.classList.contains('films')?track():unhint())},{passive:true,capture:true});
 addEventListener('click',e=>{if(e.defaultPrevented)return;if(!e.target.closest('a,button,video,#panel')&&shown.film)location.hash='film-'+shown.film.id});
 addEventListener('focusin',e=>{const t=e.target;if(!t.matches?.('a,button')||!t.matches(':focus-visible'))return;$$('.w',t).forEach(light);const b=t.getBoundingClientRect();move(b.left+b.width/2,b.top+b.height/2);cut()});
+function navUp(){if(coarse||page!=='home')return;$$('#home a.link .w:not(.lit)').forEach(w=>light(w))}
+addEventListener('wheel',e=>{if(e.deltaY>0)navUp()},{passive:true});addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' ')navUp()});
 addEventListener('keydown',e=>{if(e.target.matches?.('video')&&e.key!=='Escape')return;const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
  if(d&&page!=='film'&&root.scrollHeight<=innerHeight+2){e.preventDefault();const c=(v,m)=>Math.max(30,Math.min(m-30,v));if(lx==null){lx=tx;ly=ty}move(c(tx+d[0]*34,innerWidth),c(ty+d[1]*34,innerHeight))}
  else if(e.key==='Enter'&&page==='home'&&!e.target.closest('a')&&shown.film)location.hash='film-'+shown.film.id;
