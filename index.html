@@ -67,6 +67,7 @@ button.cat{font:400 var(--mid)/1.3 var(--disp);padding:calc(var(--u)*.75) 0;text
 .im{display:block;width:100%;aspect-ratio:var(--a);background-size:400% 300%;background-color:#000;position:relative}
 .th .im::after{content:"";position:absolute;left:10px;bottom:9px;border:solid #0000;border-width:5px 0 5px 9px;border-left-color:#fff;filter:drop-shadow(0 0 3px #000)}
 .row.on{display:block}.row.on .th{display:none}.row.on .tx{padding-top:8px}
+.th .pv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;background:#000;opacity:0;transition:opacity .4s}.th .pv.go{opacity:1}
 .player video{display:block;object-fit:cover;width:min(100%,calc(72vh*var(--a)));aspect-ratio:var(--a);background:#000}.player .x{font-size:13px;color:#a6a6a6;padding:12px 24px 8px 0}.player .x:hover{color:var(--white)}
 @media(max-width:700px){.row{--tw:116px;--vh:128px;gap:0 14px;align-items:start;padding:10px 0}#work .row .link{padding-top:0}}
 #work .link{font-size:clamp(21px,1.75vw,25px);padding-block:6px 2px;width:fit-content}#work .d{padding-bottom:2px}
@@ -188,19 +189,27 @@ function aim(px,py){if(page!=='work')return;const l=px<pane.getBoundingClientRec
   if(!one&&l.getAttribute('aria-expanded')!=='true'&&!isPlaying()&&!touching)aim.t=setTimeout(()=>{openCat(l);l.dataset.ho=Date.now()},260)}
 
 
-let io=null;function watch(){io?.disconnect();io=null;if(!coarse||!pane.firstElementChild||!window.IntersectionObserver)return;io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){light(e.target);io.unobserve(e.target)}},{root:pane,rootMargin:'-17% 0px -17% 0px'});$$('.w:not(.lit)',pane).forEach(w=>io.observe(w))}
+let io=null;function watch(){io?.disconnect();io=null;if(!coarse||!pane.firstElementChild||!window.IntersectionObserver)return;io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){light(e.target);io.unobserve(e.target)}},{root:pane,rootMargin:'-17% 0px -17% 0px'});$$('.w:not(.lit)',pane).forEach(w=>io.observe(w));hot()}
+
+let band=null,bandT=0,pv=null;function stopPv(){clearTimeout(bandT);if(!pv)return;pv.pause();pv.removeAttribute('src');pv.load();pv.remove();pv=null}
+function startPv(r){if(isPlaying()||r.classList.contains('on')||!r.isConnected)return;stopPv();const f=F.find(f=>f.id===r.dataset.s),th=$('.th',r);if(!f||!th)return;
+  const v=document.createElement('video');v.className='pv';v.muted=v.defaultMuted=v.loop=v.playsInline=true;v.setAttribute('muted','');v.setAttribute('playsinline','');v.preload='metadata';v.src='https://eladasulin.github.io/media/'+(f.episodes?f.episodes[0].v:f.id)+'.mp4';v.onplaying=()=>v.classList.add('go');th.append(v);v.play().catch(()=>{});pv=v;pv.row=r}
+function hot(){band?.disconnect();band=null;stopPv();if(!coarse||page!=='work'||!window.IntersectionObserver)return;
+  band=new IntersectionObserver(es=>{for(const e of es){const el=e.target;if(el.matches('.cat')){if(e.isIntersecting&&el.getAttribute('aria-expanded')!=='true')openCat(el,true);continue}
+    if(e.isIntersecting){clearTimeout(bandT);const f=F.find(f=>f.id===el.dataset.s);if(f)setScope([f]);bandT=setTimeout(()=>startPv(el),450)}else{if(pv&&pv.row===el)stopPv();if(scope&&scope.length===1&&scope[0].id===el.dataset.s)setScope(null)}}},{root:pane,rootMargin:'-35% 0px -35% 0px'});
+  $$('.cat,.row',pane).forEach(e=>band.observe(e))}
 
 function centreBox(top,bottom,smooth){const vh=pane.clientHeight,pt=pane.getBoundingClientRect().top,t=top-pt+pane.scrollTop,H=bottom-top,to=Math.round(Math.max(0,Math.min(H<=vh-160?t+H/2-vh/2:t-96,pane.scrollHeight-vh)));
   cancelAnimationFrame(centreBox.r);if(!smooth||calm){pane.scrollTop=to;return}if(coarse){pane.scrollTo({top:to,behavior:'smooth'});return}const from=pane.scrollTop,t0=performance.now(),st=n=>{const k=Math.min(1,(n-t0)/500);pane.scrollTop=from+(to-from)*(1-(1-k)**3);if(k<1)centreBox.r=requestAnimationFrame(st)};centreBox.r=requestAnimationFrame(st)}
 function centreContent(){const sec=pane.firstElementChild;if(!sec)return;const g=$('#work .group.open');if(g){const b=g.getBoundingClientRect();centreBox(b.top,b.bottom);return}const b=[...sec.children].map(e=>e.getBoundingClientRect()).filter(b=>b.height);if(b.length)centreBox(Math.min(...b.map(b=>b.top)),Math.max(...b.map(b=>b.bottom)))}
 
-function openCat(h,force,centre){clearTimeout(aim.t);const g=h.parentNode,open=force||h.getAttribute('aria-expanded')!=='true',flip=()=>{stopInline();$$('#work .group').forEach(e=>{const on=e===g&&open;e.classList.toggle('open',on);$('.cat',e).setAttribute('aria-expanded',on)})};
+function openCat(h,force,centre){clearTimeout(aim.t);if(coarse){const g=h.parentNode,open=force||h.getAttribute('aria-expanded')!=='true';if(!open&&pv&&g.contains(pv))stopPv();g.classList.toggle('open',open);h.setAttribute('aria-expanded',open);try{sessionStorage.setItem('open',open?h.dataset.s:'')}catch{};return}const g=h.parentNode,open=force||h.getAttribute('aria-expanded')!=='true',flip=()=>{stopInline();$$('#work .group').forEach(e=>{const on=e===g&&open;e.classList.toggle('open',on);$('.cat',e).setAttribute('aria-expanded',on)})};
   if(centre){const c=$('#work');c.style.setProperty('--shift','0px');c.style.setProperty('--pad','0px');flip();const b=(open?g:h).getBoundingClientRect();centreBox(b.top,b.bottom,true)}else anchor(h,flip);
   try{sessionStorage.setItem('open',open?h.dataset.s:'')}catch{};fitPage();paint()}
 function arm(){clearTimeout(idle);if((!calm||coarse))idle=setTimeout(startDrift,arm.used?(coarse?1500:6000):1000)}
 function stopDrift(){cancelAnimationFrame(driftRaf);driftRaf=0}
 
-function startDrift(){const v=$('video');if(v&&!v.paused){arm();return}if(driftRaf)return;root.classList.remove('still');lx=null;clearTimeout(aim.t);setScope(null);
+function startDrift(){const v=$('video:not(.pv)');if(v&&!v.paused){arm();return}if(driftRaf)return;root.classList.remove('still');lx=null;clearTimeout(aim.t);if(!(coarse&&page==='work'))setScope(null);
   const area=()=>{const host=page==='home'?$('.col'):pane.firstElementChild,ls=host?$$('.t',host).map(e=>e.getBoundingClientRect()).filter(b=>b.height&&b.bottom>0&&b.top<innerHeight):[];
     if(coarse)return {l:28,r:innerWidth-28,t:innerHeight*.1,b:innerHeight*.9};if(!ls.length)return {l:innerWidth*.2,r:innerWidth*.6,t:innerHeight*.3,b:innerHeight*.7};const l=Math.min(...ls.map(b=>b.left));return {l,r:Math.min(Math.max(...ls.map(b=>b.right)),l+innerWidth*.5),t:Math.min(...ls.map(b=>b.top)),b:Math.max(...ls.map(b=>b.bottom))}};
   let t0,ts,box=null,bt=0;const step=t=>{const dt=Math.min(50,t-(t0??t));t0=t;ts??=t;if(!box||t-bt>2000){box=area();bt=t}
@@ -216,10 +225,10 @@ const ABOUT=['Director, editor and cinematographer.','I have made hundreds of fi
 const thumb=(f,on)=>`<span class="w im${on||S.has('t-'+f.id)?' lit done':''}" data-k="t-${f.id}" style="background-image:url(t/${f.id}.jpg);background-position:${(f.thumb%4)/3*100}% ${(f.thumb/4|0)/2*100}%"></span>`;
 const row=f=>`<div class="row" data-s="${f.id}" style="--a:${f.aspect.split('/').reduce((a,b)=>a/b).toFixed(4)}"><button type="button" class="th" aria-label="Play ${esc(f.title)}">${thumb(f)}</button><div class="tx">`+line('a','link','f-'+f.id,f.title,'#film-'+f.id)+(f.line?line('p','d','l-'+f.id,f.line):'')+`</div></div>`;
 
-const isPlaying=()=>{const v=$('video');return !!v&&!v.paused&&!v.ended};
+const isPlaying=()=>{const v=$('video:not(.pv)');return !!v&&!v.paused&&!v.ended};
 function stopInline(){const p=$('.player');if(!p)return null;const r=p.closest('.row'),v=$('video',p);v.pause();p.remove();r.classList.remove('on');return r}
 function closeInline(focus){const r=$('.row.on');if(!r)return;anchor(r,stopInline);if(focus)$('.th',r).focus({preventScroll:true});paint()}
-function playInline(r){const f=F.find(f=>f.id===r.dataset.s);$$('.w',r).forEach(light);clearTimeout(aim.t);stopDrift();
+function playInline(r){stopPv();const f=F.find(f=>f.id===r.dataset.s);$$('.w',r).forEach(light);clearTimeout(aim.t);stopDrift();
   anchor(r,()=>{stopInline();r.classList.add('on');const d=document.createElement('div');d.className='player';
     d.innerHTML=`<video controls playsinline preload="none" src="https://eladasulin.github.io/media/${f.episodes?f.episodes[0].v:f.id}.mp4" aria-label="${esc(f.title)}"></video><button type="button" class="x">Close</button>`;r.prepend(d);$('.x',d).onclick=()=>closeInline(true)});
   const v=$('video',r);v.play().catch(()=>{});v.focus({preventScroll:true});
@@ -236,7 +245,7 @@ contact:()=>`<p class="t lb">${W('lb-m','Email')}</p><p class="t v"><bdi dir="lt
 };
 function sect(p){return `<section id="${p}" class="${p==='home'?'col':'pn'}"${p==='film'&&cur?` style="--a:${cur.aspect.split('/').reduce((a,b)=>a/b).toFixed(4)}"`:''}>${T[p]()}</section>`}
 function route(first,keep){const h=location.hash.slice(1)||'home',m=h.match(/^film[-/](.+)$/);cur=m&&F.find(f=>f.id===m[1]);
- const p=cur?'film':T[h]&&h!=='film'?h:'home',sy=pane.scrollTop,was=page,open=p!=='home';$('video')?.pause();if(was==='work'&&p==='film')wsy=sy;page=p;acc=0;lx=null;stopDrift();drift=null;tag.textContent='';clearTimeout(aim.t);
+ const p=cur?'film':T[h]&&h!=='film'?h:'home',sy=pane.scrollTop,was=page,open=p!=='home';stopPv();$('video')?.pause();if(was==='work'&&p==='film')wsy=sy;page=p;acc=0;lx=null;stopDrift();drift=null;tag.textContent='';clearTimeout(aim.t);
  if(!keep&&h!==lastH)pl.clear();lastH=h;
  if(first||keep||!views.firstChild)views.innerHTML=sect('home');
  clearTimeout(route.c);if(open){S=pl;pane.innerHTML=sect(p);S=seen;watch()}else route.c=setTimeout(()=>{if(page==='home')pane.innerHTML=''},700);
