@@ -236,8 +236,10 @@ const BG=(()=>{const on=!coarse,st=$('#bst'),G={top:[0,22,40,58,76,94,100],bot:[
         if(calm){l.style.opacity=0;l.classList.add('in');l.getBoundingClientRect();l.style.opacity=1}else{l.style.clipPath=from;l.getBoundingClientRect();l.classList.add('in');l.style.clipPath='inset(0)'}
         setTimeout(()=>{while(b.children.length>1)b.firstChild.remove()},1250)};
       Promise.race([im.ready,new Promise(r=>setTimeout(r,2500))]).then(()=>setTimeout(go,i*140))})}
-  function begin(){if(started||!D||!wide())return;started=1;root.classList.add('bands');deal(D.first.land.map(load),false);prepare()}
-  function wipe(){if(!started||busy||!ahead)return;busy=1;deal(ahead,true);setTimeout(()=>{busy=0;prepare()},6*140+1150)}
+  const fixed=k=>{const a=D?.screens?.land?.[k];return Array.isArray(a)&&a.length===6&&a.every(n=>Number.isInteger(n)&&D.land[n])?a:null};
+  function begin(){if(started||!D||!wide())return;started=1;root.classList.add('bands');deal((fixed('home')||D.first.land).map(load),false);prepare()}
+  
+  let next=null;function wipe(k){if(!started)return;if(busy){next=k;return}const f=fixed(k),set=f?f.map(load):ahead;if(!set)return;busy=1;deal(set,true);setTimeout(()=>{busy=0;prepare();if(next!=null){const n=next;next=null;wipe(n)}},6*140+1150)}
   if(on){fetch('b/bands.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{if(!d.land?.length||!d.first?.land)throw 0;D=d;begin()}).catch(()=>{});
     let rt=0;addEventListener('resize',()=>{if(!started){begin();return}clearTimeout(rt);rt=setTimeout(()=>bands.forEach((b,i)=>b.querySelectorAll('img').forEach(im=>fit(im,i))),120)})}
   return {wipe,films}})();
@@ -374,7 +376,7 @@ contact:()=>`<p class="t lb">${W('lb-m','Email')}</p><p class="t v"><bdi dir="lt
 function sect(p){return `<section id="${p}" class="${p==='home'?'col':'pn'}"${p==='film'&&cur?` style="--a:${cur.aspect.split('/').reduce((a,b)=>a/b).toFixed(4)}"`:''}>${T[p]()}</section>`}
 function route(first,keep){if(coarse&&location.hash==='#work'){history.replaceState(null,'',location.pathname+location.search);route.feed=1}const h=location.hash.slice(1)||'home',m=h.match(/^film[-/](.+)$/);cur=m&&F.find(f=>f.id===m[1]);
  const p=cur?'film':T[h]&&h!=='film'?h:'home',sy=pane.scrollTop,was=page,open=p!=='home';stopPv();$('video')?.pause();if(was==='work'&&p==='film')wsy=sy;page=p;acc=0;lx=null;stopDrift();drift=null;tag.textContent='';clearTimeout(aim.t);
- if(!keep&&h!==lastH){pl.clear();if(!first&&lastH!==null)BG.wipe()}lastH=h;
+ if(!keep&&h!==lastH){pl.clear();if(!first&&lastH!==null)BG.wipe(p)}lastH=h;
  if(first||keep||!views.firstChild){views.innerHTML=sect('home');watchHome()}
  clearTimeout(route.c);if(open){S=pl;pane.innerHTML=sect(p);S=seen;watch()}else route.c=setTimeout(()=>{if(page==='home')pane.innerHTML=''},700);
  root.classList.toggle('panel',open);panel.inert=!open;$('#up').hidden=p!=='film';
