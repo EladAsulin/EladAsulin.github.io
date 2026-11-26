@@ -31,7 +31,7 @@ header{padding:calc(env(safe-area-inset-top) + 28px) 0 0}
 .topic:first-child{margin-top:0}
 .film{display:block;width:100%;text-align:left;padding:10px 0 12px}
 .film h2{margin:0;font-size:clamp(30px,9vw,44px);line-height:1.06;font-weight:400;letter-spacing:-.01em;color:var(--dim);transition:color .6s ease}
-.film .meta{margin-top:8px;opacity:0;transition:opacity .6s ease;font-size:14px;line-height:1.45;color:#cfcfcf}
+.film .meta{margin-top:8px;height:86px;overflow:hidden;opacity:0;transition:opacity .6s ease;font-size:14px;line-height:1.45;color:#cfcfcf}
 .film .cl{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin-bottom:3px}
 .film .ln{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .film.act h2{color:#fff}
@@ -43,11 +43,12 @@ footer a{text-decoration:none;border-bottom:1px solid #555;padding-bottom:3px}
 .r.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.r{transform:none;transition:opacity .6s}.layer,.layer video{transition:none}}
 /* full-screen player */
-#pl{position:fixed;inset:0;z-index:10;background:#000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .4s ease,visibility 0s linear .4s}
+#pl{position:fixed;inset:0;z-index:10;background:#000;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .4s ease,visibility 0s linear .4s}
 #pl.open{opacity:1;visibility:visible;transition:opacity .4s ease}
-#pl video{width:100%;height:100%;object-fit:contain;background:#000}
-#close{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:max(12px,env(safe-area-inset-right));z-index:2;font-size:15px;letter-spacing:.06em;padding:10px 16px;border:1px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#pt{position:absolute;left:var(--g);top:calc(env(safe-area-inset-top) + 20px);right:110px;font-size:15px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2;pointer-events:none}
+#pl video{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
+#pt{flex:1;margin:0;font-size:15px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bar{flex:none;display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 10px) max(14px,env(safe-area-inset-right)) 10px var(--g)}
+#close{flex:none;font-size:15px;letter-spacing:.06em;padding:9px 18px;border:1px solid rgba(255,255,255,.55);border-radius:999px}
 </style></head><body>
 <div id="bg" aria-hidden="true"></div>
 <main>
@@ -55,7 +56,7 @@ footer a{text-decoration:none;border-bottom:1px solid #555;padding-bottom:3px}
   <div id="list"></div>
   <footer class="r"><a href="/#about">About</a><a href="/#contact">Contact</a></footer>
 </main>
-<div id="pl" role="dialog" aria-modal="true" aria-label="Film"><p id="pt"></p><button id="close" type="button">Close</button><video id="pv" controls playsinline preload="none"></video></div>
+<div id="pl" role="dialog" aria-modal="true" aria-label="Film"><div id="bar"><p id="pt"></p><button id="close" type="button">Close</button></div><video id="pv" controls playsinline preload="none"></video></div>
 <script>
 const MEDIA='https://eladasulin.github.io/media/',ORDER=['Animation & AI','Commercials & Brand Films','Campaigns','Documentary','Fiction & Music Videos'];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -74,6 +75,8 @@ fetch('../films.json').then(r=>r.json()).then(a=>{
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{rootMargin:'0px 0px -6% 0px'});
   document.querySelectorAll('.r').forEach(el=>io.observe(el));
   items.forEach(b=>b.addEventListener('click',()=>open(F[+b.dataset.i])));
+  const go=items.find(b=>F[+b.dataset.i].id===location.hash.slice(1));   // #slug opens the list at that film
+  if(go){const r=go.firstChild.getBoundingClientRect();scrollTo(0,scrollY+r.top+r.height/2-innerHeight/2);document.querySelectorAll('.r').forEach(el=>el.getBoundingClientRect().top<innerHeight&&el.classList.add('in'))}
   pick();addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(()=>{ticking=false;pick()})}},{passive:true});
   addEventListener('resize',pick);
 });
@@ -91,7 +94,7 @@ function show(f){
   if(layer&&layer.dataset.id===f.id)return;
   const L=document.createElement('div');L.className='layer';L.dataset.id=f.id;
   const im=new Image();im.src=poster(f);im.alt='';L.appendChild(im);
-  const v=document.createElement('video');v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='metadata';v.poster=poster(f);
+  const v=document.createElement('video');v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='metadata';
   v.addEventListener('playing',()=>v.classList.add('ready'),{once:true});
   v.src=src(f);L.appendChild(v);bg.appendChild(L);
   const old=layer;layer=L;
