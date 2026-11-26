@@ -1,0 +1,71 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><title>Elad Asulin · eye test</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap">
+<style>
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Jost,system-ui,sans-serif;overflow:hidden}
+/* the stage holds six diagonal bands; every band shows the SAME registered frame position of a different eye */
+.st{position:fixed;left:50%;top:50%;width:100vw;height:100vh;height:100dvh;transform:translate(-50%,-50%);--g:-.5px}
+.st.gap{--g:2.5px}
+.sl{position:absolute;inset:0}
+.ly{position:absolute;inset:0;background-size:cover;background-position:center}
+.sl:nth-child(1){clip-path:polygon(0 0,calc(22% - var(--g)) 0,calc(6% - var(--g)) 100%,0 100%)}
+.sl:nth-child(2){clip-path:polygon(calc(22% + var(--g)) 0,calc(40% - var(--g)) 0,calc(24% - var(--g)) 100%,calc(6% + var(--g)) 100%)}
+.sl:nth-child(3){clip-path:polygon(calc(40% + var(--g)) 0,calc(58% - var(--g)) 0,calc(42% - var(--g)) 100%,calc(24% + var(--g)) 100%)}
+.sl:nth-child(4){clip-path:polygon(calc(58% + var(--g)) 0,calc(76% - var(--g)) 0,calc(60% - var(--g)) 100%,calc(42% + var(--g)) 100%)}
+.sl:nth-child(5){clip-path:polygon(calc(76% + var(--g)) 0,calc(94% - var(--g)) 0,calc(78% - var(--g)) 100%,calc(60% + var(--g)) 100%)}
+.sl:nth-child(6){clip-path:polygon(calc(94% + var(--g)) 0,100% 0,100% 100%,calc(78% + var(--g)) 100%)}
+@media(orientation:portrait){
+/* portrait, default: the eye stays upright and is cropped to the iris and lids; bands become diagonal horizontal slices */
+.sl:nth-child(1){clip-path:polygon(0 0,100% 0,100% calc(8% - var(--g)),0 calc(22% - var(--g)))}
+.sl:nth-child(2){clip-path:polygon(0 calc(22% + var(--g)),100% calc(8% + var(--g)),100% calc(25% - var(--g)),0 calc(39% - var(--g)))}
+.sl:nth-child(3){clip-path:polygon(0 calc(39% + var(--g)),100% calc(25% + var(--g)),100% calc(42% - var(--g)),0 calc(56% - var(--g)))}
+.sl:nth-child(4){clip-path:polygon(0 calc(56% + var(--g)),100% calc(42% + var(--g)),100% calc(59% - var(--g)),0 calc(73% - var(--g)))}
+.sl:nth-child(5){clip-path:polygon(0 calc(73% + var(--g)),100% calc(59% + var(--g)),100% calc(76% - var(--g)),0 calc(90% - var(--g)))}
+.sl:nth-child(6){clip-path:polygon(0 calc(90% + var(--g)),100% calc(76% + var(--g)),100% 100%,0 100%)}
+/* portrait, option: the whole landscape composition turned 90 degrees, so the full eye fills the phone */
+.st.rot{width:100vh;width:100dvh;height:100vw;transform:translate(-50%,-50%) rotate(90deg)}
+.st.rot .sl:nth-child(1){clip-path:polygon(0 0,calc(22% - var(--g)) 0,calc(6% - var(--g)) 100%,0 100%)}
+.st.rot .sl:nth-child(2){clip-path:polygon(calc(22% + var(--g)) 0,calc(40% - var(--g)) 0,calc(24% - var(--g)) 100%,calc(6% + var(--g)) 100%)}
+.st.rot .sl:nth-child(3){clip-path:polygon(calc(40% + var(--g)) 0,calc(58% - var(--g)) 0,calc(42% - var(--g)) 100%,calc(24% + var(--g)) 100%)}
+.st.rot .sl:nth-child(4){clip-path:polygon(calc(58% + var(--g)) 0,calc(76% - var(--g)) 0,calc(60% - var(--g)) 100%,calc(42% + var(--g)) 100%)}
+.st.rot .sl:nth-child(5){clip-path:polygon(calc(76% + var(--g)) 0,calc(94% - var(--g)) 0,calc(78% - var(--g)) 100%,calc(60% + var(--g)) 100%)}
+.st.rot .sl:nth-child(6){clip-path:polygon(calc(94% + var(--g)) 0,100% 0,100% 100%,calc(78% + var(--g)) 100%)}
+}
+.tx{position:fixed;left:5vw;top:6vh;text-shadow:0 2px 20px rgba(0,0,0,.8);pointer-events:none;transition:opacity .5s}
+.tx.off{opacity:0}
+h1{font-weight:400;font-size:clamp(22px,2.6vw,38px);line-height:1;margin:0;letter-spacing:.01em}
+p{font-size:clamp(13px,1.2vw,17px);margin:.45em 0 0;font-weight:300;letter-spacing:.04em}
+.sw{position:fixed;right:14px;bottom:14px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:92vw;transition:opacity .4s}
+.sw.off{opacity:0;pointer-events:none}
+button{font:inherit;font-size:12px;color:#fff;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.4);padding:7px 10px;border-radius:4px;cursor:pointer}
+button.on{background:rgba(255,255,255,.22)}
+#bRot{display:none}@media(orientation:portrait){#bRot{display:block}}
+</style></head><body>
+<div class="st" id="st"></div>
+<div class="tx" id="tx"><h1>Elad Asulin</h1><p>creating stories</p></div>
+<div class="sw" id="sw"><button id="bSwap">Swap one band</button><button id="bAll">Swap all</button><button id="bAuto" class="on">Auto</button><button id="bOne">One eye</button><button id="bGap">Gaps</button><button id="bTx" class="on">Text</button><button id="bRot">Rotate</button></div>
+<script>
+const N=9,BANDS=6,st=document.getElementById('st'),src=i=>`eye/e${i}.jpg`;
+for(let i=0;i<N;i++){const im=new Image();im.src=src(i)}           /* preload all eyes */
+let cur=[0,1,2,3,4,5],last=-1,timer=null;
+const vertWipe=()=>!matchMedia('(orientation:portrait)').matches||st.classList.contains('rot');
+cur.forEach(e=>{const b=document.createElement('div');b.className='sl';const l=document.createElement('div');l.className='ly';l.style.backgroundImage=`url(${src(e)})`;b.append(l);st.append(b)});
+/* put eye e into band i with a wipe that runs inside the band */
+function put(i,e,delay=0){cur[i]=e;const b=st.children[i];setTimeout(()=>{
+  const l=document.createElement('div');l.className='ly';l.style.backgroundImage=`url(${src(e)})`;
+  l.style.clipPath=vertWipe()?(i%2?'inset(100% 0 0 0)':'inset(0 0 100% 0)'):(i%2?'inset(0 0 0 100%)':'inset(0 100% 0 0)');
+  b.append(l);l.getBoundingClientRect();l.style.transition='clip-path 1.2s cubic-bezier(.7,0,.2,1)';l.style.clipPath='inset(0)';
+  setTimeout(()=>{while(b.children.length>1)b.firstChild.remove()},1400)},delay)}
+const spare=()=>[...Array(N).keys()].filter(e=>!cur.includes(e));
+function swapOne(){let i;do{i=Math.floor(Math.random()*BANDS)}while(i===last);last=i;const s=spare();put(i,s[Math.floor(Math.random()*s.length)])}
+function swapAll(){const pool=[...Array(N).keys()].sort(()=>Math.random()-.5);for(let i=0;i<BANDS;i++)put(i,pool[i],i*140)}
+function one(){const e=Math.floor(Math.random()*N);for(let i=0;i<BANDS;i++)put(i,e,i*140)}   /* all bands the same eye: proves the registration */
+function auto(on){clearInterval(timer);timer=on?setInterval(swapOne,2600):null;bAuto.classList.toggle('on',on)}
+bSwap.onclick=swapOne;bAll.onclick=swapAll;bOne.onclick=()=>{auto(false);one()};
+bAuto.onclick=()=>auto(!timer);
+bGap.onclick=()=>bGap.classList.toggle('on',st.classList.toggle('gap'));
+bTx.onclick=()=>bTx.classList.toggle('on',!tx.classList.toggle('off'));
+bRot.onclick=()=>bRot.classList.toggle('on',st.classList.toggle('rot'));
+addEventListener('keydown',e=>{if(e.key==='h')sw.classList.toggle('off');if(e.key===' ')swapOne()});
+const q=new URLSearchParams(location.search);if(q.has('gap'))bGap.onclick();if(q.has('rot'))bRot.onclick();if(q.has('notext'))bTx.onclick();if(q.has('clean'))sw.classList.add('off');
+auto(!q.has('still'));
+</script></body></html>

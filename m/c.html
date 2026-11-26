@@ -2,47 +2,65 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap">
 <style>
 html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Jost,system-ui,sans-serif;overflow:hidden}
-.st{position:fixed;inset:0}
-.ly{position:absolute;inset:0;background-size:cover;background-position:center}
-.sl{position:absolute;inset:0;opacity:0;transform:scale(1.06);transition:opacity 1.6s cubic-bezier(.16,1,.3,1),transform 2.4s cubic-bezier(.16,1,.3,1)}
-.sl.on{opacity:1;transform:none}
-/* six diagonal bands; each band is one frame, together they fill the screen */
-.sl:nth-child(1){clip-path:polygon(0 0,22% 0,6% 100%,0 100%)}
-.sl:nth-child(2){clip-path:polygon(22% 0,40% 0,24% 100%,6% 100%)}
-.sl:nth-child(3){clip-path:polygon(40% 0,58% 0,42% 100%,24% 100%)}
-.sl:nth-child(4){clip-path:polygon(58% 0,76% 0,60% 100%,42% 100%)}
-.sl:nth-child(5){clip-path:polygon(76% 0,94% 0,78% 100%,60% 100%)}
-.sl:nth-child(6){clip-path:polygon(94% 0,100% 0,100% 100%,78% 100%)}
-@media(orientation:portrait){
-.sl:nth-child(1){clip-path:polygon(0 0,100% 0,100% 8%,0 22%)}
-.sl:nth-child(2){clip-path:polygon(0 22%,100% 8%,100% 25%,0 39%)}
-.sl:nth-child(3){clip-path:polygon(0 39%,100% 25%,100% 42%,0 56%)}
-.sl:nth-child(4){clip-path:polygon(0 56%,100% 42%,100% 59%,0 73%)}
-.sl:nth-child(5){clip-path:polygon(0 73%,100% 59%,100% 76%,0 90%)}
-.sl:nth-child(6){clip-path:polygon(0 90%,100% 76%,100% 100%,0 100%)}}
-.dim{position:absolute;inset:0;background:rgba(0,0,0,.38)}
-.tx{position:absolute;left:7vw;top:9vh;text-shadow:0 2px 24px rgba(0,0,0,.6)}
-h1{font-weight:400;font-size:clamp(46px,9vw,120px);line-height:1;margin:0;letter-spacing:-.01em}
-p{font-size:clamp(18px,2.2vw,28px);margin:.5em 0 0;font-weight:300}
-.nav{position:absolute;left:7vw;bottom:12vh;display:flex;flex-direction:column;gap:.2em;font-size:clamp(26px,3vw,44px);text-shadow:0 2px 24px rgba(0,0,0,.7)}.nav a{cursor:pointer}#where{font-size:14px;opacity:.7;margin-top:.6em;min-height:1em}
-.sw{position:absolute;right:16px;bottom:16px;display:flex;gap:8px}
-button{font:inherit;font-size:13px;color:#fff;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.4);padding:8px 12px;border-radius:4px}
+#st{position:fixed;inset:0}
+/* six diagonal bands fill the screen; every band shows one frame, framed for its own slice (focal point on the band's centre line) */
+.band{position:absolute;inset:0;opacity:0;transition:opacity 1.4s cubic-bezier(.16,1,.3,1)}.band.on{opacity:1}
+.ly{position:absolute;inset:0;overflow:hidden}.ly img{position:absolute;display:block;max-width:none;user-select:none;-webkit-user-drag:none}
+.ly.in{transition:clip-path 1.1s cubic-bezier(.7,0,.2,1)}
+#dim{position:fixed;inset:0;pointer-events:none;background:linear-gradient(165deg,rgba(0,0,0,calc(var(--d) + .25)) 0%,rgba(0,0,0,var(--d)) 38%,rgba(0,0,0,var(--d)) 70%,rgba(0,0,0,calc(var(--d) + .2)) 100%)}
+:root{--d:.32}
+.tx{position:fixed;left:max(7vw,24px);top:max(9vh,28px);text-shadow:0 1px 3px rgba(0,0,0,.55),0 2px 28px rgba(0,0,0,.6)}
+h1{font-weight:400;font-size:clamp(46px,8.4vw,116px);line-height:1;margin:0;letter-spacing:-.015em}
+.tx p{font-size:clamp(20px,2.3vw,30px);margin:.45em 0 0;font-weight:300}
+.nav{position:fixed;left:max(7vw,24px);bottom:max(11vh,40px);display:flex;flex-direction:column;align-items:flex-start;gap:.15em;font-size:clamp(28px,3vw,44px);text-shadow:0 1px 3px rgba(0,0,0,.6),0 2px 24px rgba(0,0,0,.7)}
+.nav a{cursor:pointer;color:inherit;text-decoration:none;padding:2px 0}.nav a:hover,.nav a[aria-current]{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.25em}
+#where{font-size:14px;opacity:.75;margin-top:.5em;min-height:1.2em}
+.sw{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center;font-size:13px}
+button,.sw label{font:inherit;font-size:13px;color:#fff;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.4);padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;gap:8px;align-items:center}
+input[type=range]{width:90px;accent-color:#fff}
+@media(prefers-reduced-motion:reduce){.ly.in{transition:opacity .4s}.band{transition:none}}
 </style></head><body>
-<div class="st" id="st"></div><div class="dim" id="dim"></div>
+<div id="st"></div><div id="dim"></div>
 <div class="tx"><h1>Elad Asulin</h1><p>creating stories</p></div>
-<div class="nav"><a data-go="Work">Work</a><a data-go="About">About</a><a data-go="Contact">Contact</a><span id="where"></span></div><div class="sw"><button id="b1">Wipe</button><button id="b2">Dim on/off</button></div>
+<nav class="nav"><a data-go="Work">Work</a><a data-go="About">About</a><a data-go="Contact">Contact</a><span id="where"></span></nav>
+<div class="sw"><label>Dim <input id="dm" type="range" min="0" max=".8" step=".02" value=".32"></label><button id="wb">Wipe</button></div>
 <script>
-const BASE=['qumra','eye','habayit','we4g','airovation','bird-song'],EXTRA=[...Array(18)].map((_,i)=>'x'+i),st=document.getElementById('st');
-let pool=[];const next=()=>{if(!pool.length)pool=EXTRA.slice().sort(()=>Math.random()-.5);return pool.pop()};
-const port=()=>matchMedia('(orientation:portrait)').matches;
-BASE.forEach((f,i)=>{const b=document.createElement('div');b.className='sl';const l=document.createElement('div');l.className='ly';l.style.backgroundImage=`url(s/${f}.jpg)`;b.append(l);st.append(b);setTimeout(()=>b.classList.add('on'),150+i*160)});
-/* wipe: every band gets a new frame that wipes in inside its own band, one band after another */
-function wipe(){[...st.children].forEach((b,i)=>{const src=`s/${next()}.jpg`,im=new Image();im.onload=()=>setTimeout(()=>{
-  const l=document.createElement('div');l.className='ly';l.style.backgroundImage=`url(${src})`;const from=port()?(i%2?'inset(0 0 0 100%)':'inset(0 100% 0 0)'):(i%2?'inset(100% 0 0 0)':'inset(0 0 100% 0)');
-  l.style.clipPath=from;b.append(l);l.getBoundingClientRect();l.style.transition='clip-path 1.1s cubic-bezier(.7,0,.2,1)';l.style.clipPath='inset(0)';
-  setTimeout(()=>{while(b.children.length>1)b.firstChild.remove()},1300)},i*140);im.src=src})}
-document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>{wipe();document.getElementById('where').textContent=x.dataset.go});
-b1.onclick=wipe;b2.onclick=()=>{dim.style.display=dim.style.display==='none'?'':'none'};
+const D={"land":[{"s":"land-00.jpg","f":"airovation","w":1440,"h":808,"fx":0.5,"fy":0.3,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"land-01.jpg","f":"airovation","w":1440,"h":808,"fx":0.6501,"fy":0.3719,"z":1.2,"b":[0]},{"s":"land-02.jpg","f":"bee-furniture","w":1276,"h":716,"fx":0.4299,"fy":0.2891,"z":1,"b":[0,1,2,3,4]},{"s":"land-03.jpg","f":"bird-song","w":1440,"h":808,"fx":0.5,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-04.jpg","f":"bird-song","w":1440,"h":808,"fx":0.5744,"fy":0.2942,"z":1,"b":[0,1,2,3,4]},{"s":"land-05.jpg","f":"bird-song","w":1440,"h":808,"fx":0.5,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-06.jpg","f":"bird-song","w":1440,"h":808,"fx":0.5,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-07.jpg","f":"bmw-test-drive","w":1276,"h":716,"fx":0.5582,"fy":0.2921,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-08.jpg","f":"bmw-test-drive","w":1276,"h":716,"fx":0.6,"fy":0.5,"z":1,"b":[0,1,2,3,4]},{"s":"land-09.jpg","f":"breaking-boundaries","w":1440,"h":808,"fx":0.4805,"fy":0.2417,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-10.jpg","f":"breaking-boundaries","w":1440,"h":808,"fx":0.398,"fy":0.2872,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-11.jpg","f":"civil-servants","w":1440,"h":798,"fx":0.5,"fy":0.4,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"land-12.jpg","f":"davidson","w":1440,"h":808,"fx":0.5578,"fy":0.2322,"z":1,"b":[0,1,2,3,4]},{"s":"land-13.jpg","f":"disability-employment","w":1440,"h":808,"fx":0.7809,"fy":0.2699,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"land-14.jpg","f":"eye","w":807,"h":1440,"fx":0.4,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-15.jpg","f":"golda-womens-day","w":1440,"h":804,"fx":0.5,"fy":0.3,"z":1.2,"b":[0]},{"s":"land-16.jpg","f":"golda-womens-day","w":1440,"h":804,"fx":0.6,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-17.jpg","f":"histadrut-organizing","w":1276,"h":716,"fx":0.2001,"fy":0.2237,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-18.jpg","f":"histadrut-pensioners","w":1276,"h":716,"fx":0.6777,"fy":0.2582,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-19.jpg","f":"home-midburn","w":1440,"h":808,"fx":0.3465,"fy":0.3293,"z":1,"b":[0,1,2,3,4]},{"s":"land-20.jpg","f":"infinidat","w":1276,"h":716,"fx":0.2736,"fy":0.2745,"z":1,"b":[0,1,2,3,4]},{"s":"land-21.jpg","f":"infinidat","w":1276,"h":716,"fx":0.3473,"fy":0.44,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-22.jpg","f":"kalpi","w":808,"h":1440,"fx":0.7533,"fy":0.5615,"z":1.45,"b":[0,1,2,3,4,5]},{"s":"land-23.jpg","f":"kalpi","w":808,"h":1440,"fx":0.3283,"fy":0.3879,"z":1.45,"b":[0,1,2,3,4,5]},{"s":"land-24.jpg","f":"migraine","w":1440,"h":808,"fx":0.686,"fy":0.247,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-25.jpg","f":"pelephone-bezeq-agreement","w":1440,"h":808,"fx":0.4942,"fy":0.1747,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-26.jpg","f":"penguins","w":804,"h":1440,"fx":0.5,"fy":0.3,"z":1.45,"b":[0,1,2,3,4,5]},{"s":"land-27.jpg","f":"penguins","w":808,"h":1440,"fx":0.4,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-28.jpg","f":"penguins","w":808,"h":1440,"fx":0.5,"fy":0.6,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"land-29.jpg","f":"poison","w":476,"h":844,"fx":0.5,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-30.jpg","f":"sodastream-how-its-made","w":1440,"h":808,"fx":0.6844,"fy":0.1396,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-31.jpg","f":"sodastream-how-its-made","w":1440,"h":808,"fx":0.4927,"fy":0.2099,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-32.jpg","f":"sodastream-womens-day","w":1276,"h":716,"fx":0.444,"fy":0.2732,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-33.jpg","f":"sodastream-womens-day","w":1249,"h":716,"fx":0.551,"fy":0.1824,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-34.jpg","f":"through-the-lens","w":1440,"h":808,"fx":0.7648,"fy":0.2016,"z":1,"b":[0,1,2,3,4]},{"s":"land-35.jpg","f":"xl-cup-2019","w":1440,"h":808,"fx":0.5714,"fy":0.2313,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-36.jpg","f":"yeshurun","w":1440,"h":804,"fx":0.6576,"fy":0.7603,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-37.jpg","f":"yeshurun","w":1440,"h":808,"fx":0.5,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-38.jpg","f":"youtube-hub","w":1440,"h":808,"fx":0.7895,"fy":0.3017,"z":1.2,"b":[0,1,2,3,4]},{"s":"land-39.jpg","f":"youtube-hub","w":1440,"h":808,"fx":0.365,"fy":0.106,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-40.jpg","f":"qumra","w":1440,"h":808,"fx":0.5,"fy":0.3,"z":1.2,"b":[0]},{"s":"land-41.jpg","f":"we4g","w":1440,"h":808,"fx":0.2357,"fy":0.5294,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-42.jpg","f":"we4g","w":1440,"h":808,"fx":0.3424,"fy":0.5055,"z":1,"b":[0,1,2,3,4,5]},{"s":"land-43.jpg","f":"habayit","w":808,"h":1440,"fx":0.2229,"fy":0.4492,"z":1.75,"b":[0,2,3,4]},{"s":"land-44.jpg","f":"habayit","w":808,"h":1440,"fx":0.3022,"fy":0.3445,"z":1.75,"b":[0,1,2,3,4,5]}],"port":[{"s":"port-00.jpg","f":"air-bibi","w":844,"h":476,"fx":0.3715,"fy":0.3527,"z":1.2,"b":[1,2,3,4,5]},{"s":"port-01.jpg","f":"air-bibi","w":844,"h":476,"fx":0.3,"fy":0.5,"z":1,"b":[0,1,3,4]},{"s":"port-02.jpg","f":"airovation","w":1100,"h":563,"fx":0.5,"fy":0.4,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"port-03.jpg","f":"airovation","w":1100,"h":617,"fx":0.5,"fy":0.3,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"port-04.jpg","f":"bee-furniture","w":1100,"h":617,"fx":0.4817,"fy":0.4562,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"port-05.jpg","f":"bird-song","w":1100,"h":617,"fx":0.7,"fy":0.5,"z":1,"b":[1,2,3,4,5]},{"s":"port-06.jpg","f":"bird-song","w":1100,"h":617,"fx":0.3,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-07.jpg","f":"bird-song","w":1100,"h":617,"fx":0.4,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-08.jpg","f":"bmw-test-drive","w":1100,"h":617,"fx":0.5,"fy":0.3,"z":1.45,"b":[0,1,2,3,4,5]},{"s":"port-09.jpg","f":"bmw-test-drive","w":1100,"h":617,"fx":0.3582,"fy":0.3909,"z":1.45,"b":[0,1,2,3,4]},{"s":"port-10.jpg","f":"breaking-boundaries","w":1100,"h":617,"fx":0.7,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-11.jpg","f":"carnival-balev","w":1100,"h":466,"fx":0.2168,"fy":0.4006,"z":1,"b":[0]},{"s":"port-12.jpg","f":"civil-servants","w":1100,"h":610,"fx":0.5,"fy":0.3,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"port-13.jpg","f":"civil-servants","w":1100,"h":617,"fx":0.5,"fy":0.3,"z":1.45,"b":[1,2,3,4,5]},{"s":"port-14.jpg","f":"civil-servants","w":1100,"h":625,"fx":0.5884,"fy":0.3261,"z":1.2,"b":[1,2,3,4]},{"s":"port-15.jpg","f":"davidson","w":1100,"h":617,"fx":0.5,"fy":0.5,"z":1,"b":[5]},{"s":"port-16.jpg","f":"eye","w":617,"h":1100,"fx":0.4,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-17.jpg","f":"golda-womens-day","w":1100,"h":614,"fx":0.3,"fy":0.5,"z":1,"b":[0,1,2,3,4]},{"s":"port-18.jpg","f":"home-midburn","w":1100,"h":617,"fx":0.3465,"fy":0.3293,"z":1.75,"b":[0,1,2,3,4]},{"s":"port-19.jpg","f":"home-midburn","w":1100,"h":617,"fx":0.5,"fy":0.4,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-20.jpg","f":"kalpi","w":617,"h":1100,"fx":0.5,"fy":0.7,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-21.jpg","f":"mediboard","w":1100,"h":617,"fx":0.7396,"fy":0.293,"z":1,"b":[0]},{"s":"port-22.jpg","f":"mia-chips","w":850,"h":476,"fx":0.3,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-23.jpg","f":"migraine","w":1100,"h":617,"fx":0.5683,"fy":0.3672,"z":1.2,"b":[0]},{"s":"port-24.jpg","f":"noga-shalev","w":476,"h":264,"fx":0.4039,"fy":0.1756,"z":1,"b":[0,1,2,4,5]},{"s":"port-25.jpg","f":"noga-shalev","w":476,"h":264,"fx":0.7919,"fy":0.457,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-26.jpg","f":"opusclip","w":844,"h":476,"fx":0.5,"fy":0.4,"z":1,"b":[0]},{"s":"port-27.jpg","f":"opusclip","w":844,"h":476,"fx":0.5,"fy":0.3,"z":1.2,"b":[0,1,2,3,4]},{"s":"port-28.jpg","f":"penguins","w":617,"h":1100,"fx":0.5,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-29.jpg","f":"penguins","w":617,"h":1100,"fx":0.5246,"fy":0.439,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-30.jpg","f":"penguins","w":617,"h":1100,"fx":0.5,"fy":0.6,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-31.jpg","f":"qumra-long","w":844,"h":419,"fx":0.5,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-32.jpg","f":"qumra-long","w":844,"h":476,"fx":0.3,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-33.jpg","f":"shoefuni-2014","w":636,"h":356,"fx":0.5,"fy":0.4,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-34.jpg","f":"sodastream-how-its-made","w":1100,"h":617,"fx":0.4527,"fy":0.479,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"port-35.jpg","f":"sodastream-how-its-made","w":1100,"h":617,"fx":0.5011,"fy":0.3273,"z":1,"b":[0]},{"s":"port-36.jpg","f":"sodastream-womens-day","w":1100,"h":617,"fx":0.5,"fy":0.3,"z":1.2,"b":[1,2]},{"s":"port-37.jpg","f":"sodastream-womens-day","w":1100,"h":617,"fx":0.3697,"fy":0.1693,"z":1,"b":[0]},{"s":"port-38.jpg","f":"we4g","w":1100,"h":617,"fx":0.5,"fy":0.3,"z":1.45,"b":[1,2,3,4]},{"s":"port-39.jpg","f":"we4g","w":1100,"h":617,"fx":0.2357,"fy":0.5294,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-40.jpg","f":"xl-cup-2019","w":1100,"h":617,"fx":0.7562,"fy":0.2982,"z":1,"b":[0]},{"s":"port-41.jpg","f":"yeshurun","w":1100,"h":617,"fx":0.5,"fy":0.4,"z":1.2,"b":[0,1,2,3,4,5]},{"s":"port-42.jpg","f":"yeshurun","w":1100,"h":617,"fx":0.5,"fy":0.7,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-43.jpg","f":"youtube-hub","w":1100,"h":617,"fx":0.6,"fy":0.5,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-44.jpg","f":"youtube-hub","w":1100,"h":617,"fx":0.365,"fy":0.106,"z":1,"b":[0,1,2,3,4,5]},{"s":"port-45.jpg","f":"habayit","w":617,"h":1100,"fx":0.2229,"fy":0.4492,"z":1,"b":[0,1,2,3,4,5]}],"first":{"land":[40,14,43,41,4,27],"port":[31,16,45,38,5,28]}};
+/* geometry: the same numbers as flash-pool/tools/bandgeo.py, where every frame was checked (no face cut by a band edge, no text inside its band) */
+const LAND={top:[0,22,40,58,76,94,100],bot:[0,6,24,42,60,78,100]},PORT={left:[0,22,39,56,73,90,100],right:[0,8,25,42,59,76,100]};
+const st=document.getElementById('st'),calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const isPort=()=>innerHeight>innerWidth;let O=isPort()?'port':'land';
+function poly(W,H,i,p){if(p){const L=PORT.left,R=PORT.right;return [[0,L[i]*H/100],[W,R[i]*H/100],[W,R[i+1]*H/100],[0,L[i+1]*H/100]]}const T=LAND.top,B=LAND.bot;return [[T[i]*W/100,0],[T[i+1]*W/100,0],[B[i+1]*W/100,H],[B[i]*W/100,H]]}
+function cpath(i,p){if(p){const L=PORT.left,R=PORT.right;return `polygon(0 ${L[i]}%,100% ${R[i]}%,100% ${R[i+1]}%,0 ${L[i+1]}%)`}const T=LAND.top,B=LAND.bot;return `polygon(${T[i]}% 0,${T[i+1]}% 0,${B[i+1]}% 100%,${B[i]}% 100%)`}
+function centre(W,H,i,p,v){if(p){const L=PORT.left,R=PORT.right,a=(L[i]+L[i+1])/200*H,b=(R[i]+R[i+1])/200*H;return a+(b-a)*v/W}const T=LAND.top,B=LAND.bot,a=(T[i]+T[i+1])/200*W,b=(B[i]+B[i+1])/200*W;return a+(b-a)*v/H}
+/* cover the band's box, zoom z, put the frame's focal point on the band's centre line, never leave a gap */
+function place(img,i){const fr=img.fr,W=innerWidth,H=innerHeight,p=O==='port',P=poly(W,H,i,p),xs=P.map(q=>q[0]),ys=P.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),bw=x1-x0,bh=y1-y0;
+  const s=fr.z*Math.max(bw/fr.w,bh/fr.h),dw=fr.w*s,dh=fr.h*s;let tx,ty;if(p){tx=x0+fr.fx*bw;ty=centre(W,H,i,p,tx)}else{ty=y0+fr.fy*bh;tx=centre(W,H,i,p,ty)}
+  const l=Math.min(x0,Math.max(x1-dw,tx-fr.fx*dw)),t=Math.min(y0,Math.max(y1-dh,ty-fr.fy*dh));Object.assign(img.style,{left:l+'px',top:t+'px',width:dw+'px',height:dh+'px'})}
+const bands=[...Array(6)].map((_,i)=>{const b=document.createElement('div');b.className='band';st.append(b);return b});
+const cur=Array(6).fill(-1),recent=[];
+const load=n=>{const fr=D[O][n],im=new Image();im.decoding='async';im.alt='';im.fr=fr;im.n=n;im.src='b/'+fr.s;im.ready=(im.decode?im.decode():new Promise(r=>im.onload=r)).catch(()=>{});return im};
+function layer(i,im){const l=document.createElement('div');l.className='ly';l.append(im);place(im,i);bands[i].append(l);return l}
+/* the next screen: a new frame for every band, valid in that band, from six films none of which is on screen now */
+function pickSet(){const busy=new Set(cur.filter(n=>n>=0).map(n=>D[O][n].f)),out=[];
+  for(let i=0;i<6;i++){const used=new Set([...busy,...out.map(n=>D[O][n].f)]);let c=D[O].map((f,n)=>n).filter(n=>D[O][n].b.includes(i)&&!used.has(D[O][n].f)&&!recent.includes(n));
+    if(!c.length)c=D[O].map((f,n)=>n).filter(n=>D[O][n].b.includes(i)&&!used.has(D[O][n].f));if(!c.length)c=D[O].map((f,n)=>n).filter(n=>D[O][n].b.includes(i)&&n!==cur[i]);out.push(c[Math.random()*c.length|0])}
+  return out}
+let ahead=null;function prepare(){ahead=pickSet().map(load)}
+function show(set,anim){set.forEach((im,i)=>{cur[i]=im.n;recent.push(im.n);if(recent.length>Math.min(24,D[O].length-8))recent.shift()});
+  set.forEach((im,i)=>{const b=bands[i];if(!anim){b.replaceChildren();layer(i,im);setTimeout(()=>b.classList.add('on'),150+i*160);return}
+    const go=()=>{const l=layer(i,im),p=O==='port',from=p?(i%2?'inset(0 0 0 100%)':'inset(0 100% 0 0)'):(i%2?'inset(100% 0 0 0)':'inset(0 0 100% 0)');
+      if(calm){l.style.opacity=0;l.classList.add('in');l.getBoundingClientRect();l.style.opacity=1}else{l.style.clipPath=from;l.getBoundingClientRect();l.classList.add('in');l.style.clipPath='inset(0)'}
+      setTimeout(()=>{while(b.children.length>1)b.firstChild.remove()},1250)};
+    Promise.race([im.ready,new Promise(r=>setTimeout(r,2500))]).then(()=>setTimeout(go,i*140))})}
+let busyWipe=0;function wipe(){if(busyWipe)return;busyWipe=1;const set=ahead;show(set,true);setTimeout(()=>{busyWipe=0;prepare()},6*140+1150)}
+function relayout(){bands.forEach((b,i)=>{b.style.clipPath=cpath(i,O==='port');b.querySelectorAll('img').forEach(im=>place(im,i))})}
+function start(){bands.forEach((b,i)=>b.style.clipPath=cpath(i,O==='port'));const first=D.first[O].map(load);show(first,false);prepare()}
+/* a real turn of the screen deals a fresh set for the new shape; a passing resize only re-frames */
+let rt=0;addEventListener('resize',()=>{relayout();clearTimeout(rt);rt=setTimeout(()=>{const o=isPort()?'port':'land';if(o!==O){O=o;cur.fill(-1);recent.length=0;start()}},400)});
+document.querySelectorAll('[data-go]').forEach(a=>a.onclick=()=>{document.querySelectorAll('[data-go]').forEach(x=>x.toggleAttribute('aria-current',x===a));document.getElementById('where').textContent=a.dataset.go+' (test: the panel would open here)';wipe()});
+document.getElementById('wb').onclick=wipe;
+const dm=document.getElementById('dm');dm.oninput=()=>document.documentElement.style.setProperty('--d',dm.value);
+start();
 </script>
-<style>.gap .sl{inset:0;-webkit-mask:none}.gap .sl::after{content:"";position:absolute;inset:0}.gap{background:#000}.gap .sl{filter:none;scale:.985}</style>
 </body></html>
