@@ -135,7 +135,22 @@ const packNo={};
 const inScope=()=>scope||F.filter(f=>!f.no_beam);
 function shuffle(a){for(let i=a.length;i>1;){const j=Math.random()*i--|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 
-async function pull(){if(coarse)return;const list=inScope();if(!list.length)return;const want=Math.min(POOL,list.length===1?2:list.length);
+const PF={on:!coarse,list:null,ready:[],busy:0,recent:[]},pfor=l=>PF.list?PF.list.filter(p=>l.some(f=>f.id===p.f)):[];
+
+function pUse(l){if(!PF.on||!PF.list)return false;const a=pfor(l);return a.length>=3&&(l.length===1||new Set(a.map(p=>p.f)).size>1)}
+function pfill(){const l=inScope();if(!pUse(l))return;const a=pfor(l),want=l.length===1?3:5,has=p=>PF.ready.some(x=>x.p===p);
+  while(PF.ready.filter(x=>l.some(f=>f.id===x.p.f)).length+PF.busy<want){
+    let c=a.filter(p=>!PF.recent.includes(p.n)&&!has(p));if(!c.length){PF.recent=[];c=a.filter(p=>!has(p))}if(!c.length)break;
+    const hold=new Set([shown.film?.id,...PF.ready.map(x=>x.p.f)]),d=c.filter(p=>!hold.has(p.f)),q=d.length?d:c,p=q[Math.random()*q.length|0];
+    PF.busy++;PF.recent.push(p.n);if(PF.recent.length>Math.max(1,a.length-want-1))PF.recent.shift();
+    fetch(`fp/${String(p.n).padStart(3,'0')}.jpg`).then(r=>{if(!r.ok)throw 0;return r.blob()}).then(createImageBitmap).then(b=>{PF.ready.push({p,b});while(PF.ready.length>12)PF.ready.shift().b.close()}).catch(()=>{})
+      .finally(()=>{PF.busy--;if(shown.i<0||!inScope().includes(shown.film))cut()})}}
+
+function pcut(){const l=inScope();if(!pUse(l))return false;pfill();const ok=PF.ready.filter(x=>l.some(f=>f.id===x.p.f)&&'p'+x.p.n!==shown.i);let c=ok.filter(x=>x.p.f!==shown.film?.id);if(!c.length&&l.length===1)c=ok;if(!c.length)return false;
+  const x=c[0];PF.ready.splice(PF.ready.indexOf(x),1);if(cv.width!==CV||cv.height!==CV){cv.width=CV;cv.height=CV}cx.drawImage(x.b,0,0,CV,CV);x.b.close();setShape(1);shown={film:F.find(f=>f.id===x.p.f),i:'p'+x.p.n};cv.dataset.frame=shown.i;pfill();label();return true}
+if(PF.on)fetch('fp/pool.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(a=>{PF.list=a;pull()}).catch(()=>{PF.on=false;pull()});
+
+async function pull(){if(coarse||PF.on&&!PF.list)return;if(pUse(inScope())){pfill();return}const list=inScope();if(!list.length)return;const want=Math.min(POOL,list.length===1?2:list.length);
   while(decks.length+loading<want){
     const free=queue.filter(f=>list.includes(f)&&!(list.length>1&&decks.some(d=>d.f===f)));let f=free[0];
     if(f)queue.splice(queue.indexOf(f),1);else{const rest=list.filter(f=>list.length===1||!decks.some(d=>d.f===f));if(!rest.length||queue.filled===turn&&loading){break}queue=shuffle([...rest]);queue.filled=turn;f=queue.shift()}
@@ -150,7 +165,7 @@ function drop(d){decks.splice(decks.indexOf(d),1);d.ready.forEach(x=>x.b.close()
 const ratio=f=>f.aspect.split('/').reduce((a,b)=>a/b),shape=f=>Math.abs(ratio(f)-16/9)<.1?1:ratio(f);
 let bw=0,bh=0,bs=1;
 function setShape(a){bs=a;bw=a===1?r:a<1?r*1.2*a:r*1.25;bh=a===1?r:a<1?r*1.2:r*1.25/a;beam.classList.toggle('own',a!==1);root.style.setProperty('--bw',bw.toFixed(1)+'px');root.style.setProperty('--bh',bh.toFixed(1)+'px')}
-function cut(){if(isPlaying())return false;const list=inScope(),key=(d,x)=>d.f.id+':'+d.k+'.'+x.i;
+function cut(){if(isPlaying())return false;if(pcut())return true;if(pUse(inScope()))return false;const list=inScope(),key=(d,x)=>d.f.id+':'+d.k+'.'+x.i;
   let ok=decks.filter(d=>list.includes(d.f)&&d.ready.some(x=>key(d,x)!==shown.i));if(!ok.length&&scope)ok=decks.filter(d=>d.ready.some(x=>key(d,x)!==shown.i));if(!ok.length){pull();return false}
   let c=ok.filter(d=>d.f!==shown.film);if(!c.length)c=ok;
   const low=Math.min(...c.map(d=>d.last??-1)),d=c.find(d=>(d.last??-1)===low);d.last=++turn;
